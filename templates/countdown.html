@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
+        img { border-radius: 50%; }
+        .countdown { font-size: 2em; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Hello, {{ username }}!</h1>
+    <img src="{{ avatar_url }}" alt="User avatar" width="100">
+    <div class="countdown">Stream PC will be available in <span id="time">30</span> seconds.</div>
+    <script>
+        var time = 30;
+        var intervalId = setInterval(function() {
+            time--;
+            document.getElementById('time').textContent = time;
+            if (time <= 0) {
+                clearInterval(intervalId);
+                document.querySelector('.countdown').textContent = 'Stream PC should be available now!';
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
