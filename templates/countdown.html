@@ -8,12 +8,14 @@
         body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
         img { border-radius: 50%; }
         .countdown { font-size: 2em; margin-top: 20px; }
+        button { padding: 10px 20px; font-size: 1em; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
     <h1>Hello, {{ username }}!</h1>
     <img src="{{ avatar_url }}" alt="User avatar" width="100">
     <div class="countdown">Stream PC will be available in <span id="time">30</span> seconds.</div>
+    <button onclick="sendSleepCommand()">Put PC to Sleep</button>
     <script>
         var time = 30;
         var intervalId = setInterval(function() {
@@ -24,6 +26,21 @@
                 document.querySelector('.countdown').textContent = 'Stream PC should be available now!';
             }
         }, 1000);
+
+        function sendSleepCommand() {
+            fetch('/sleep', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.status || data.error);
+                    if (data.status) {
+                        document.querySelector('.countdown').textContent = 'Stream PC is going to sleep!';
+                    }
+                })
+                .catch(error => {
+                    alert('Failed to send sleep command.');
+                    console.error('Error:', error);
+                });
+        }
     </script>
 </body>
 </html>

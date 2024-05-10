@@ -1,6 +1,7 @@
 import os
 import logging
 from logging.handlers import RotatingFileHandler
+import socket
 from flask import Flask, redirect, url_for, session, render_template, jsonify
 from flask_dance.contrib.discord import make_discord_blueprint, discord
 from dotenv import load_dotenv
@@ -26,6 +27,23 @@ discord_blueprint = make_discord_blueprint(
     scope=["identify", "guilds"] 
 )
 app.register_blueprint(discord_blueprint, url_prefix='/login')
+
+def send_tcp_command(ip, port, message, timeout=10):  # Added a default timeout parameter
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(timeout)  # Set the timeout for the connection
+            sock.connect((ip, int(port)))
+            sock.sendall(message.encode())
+            # If you need to wait for a response, uncomment the next lines:
+            # response = sock.recv(1024)
+            # return response.decode()
+            return "Success"
+    except socket.timeout:
+        logging.error(f"Connection timed out: Could not connect to {ip}:{port}")
+        return "Timeout"
+    except socket.error as e:
+        logging.error(f"Socket error: {e}")
+        return "Socket Error"
 
 def get_user_roles(guild_id, user_id, bot_token):
     url = f"https://discord.com/api/v9/guilds/{guild_id}/members/{user_id}"
@@ -83,6 +101,37 @@ def wakeup():
     else:
         logging.error("Failed to retrieve environment settings.")
         return 'Environment configuration error. Please check settings.', 500
+    
+@app.route('/sleep', methods=['POST'])    
+def sleep():
+    if not discord.authorized:
+        return jsonify({"error": "Unauthorized access"}), 401
+
+    discord_guild_id = os.getenv('DISCORD_GUILD_ID')
+    required_role_id = os.getenv('REQUIRED_ROLE_ID')
+    bot_token = os.getenv('DISCORD_BOT_TOKEN')
+    user_info = discord.get('/api/users/@me').json()
+
+    roles = get_user_roles(discord_guild_id, user_info["id"], bot_token)
+
+    if not user_has_role(roles, required_role_id):
+        logging.warning(f"User {user_info['username']} does not have the required role. Roles: {roles}")
+        return jsonify({"error": "You do not have permission to perform this action"}), 403
+
+    sleep_ip_address = os.getenv('WOL_IP_ADDRESS')
+    client_port = os.getenv('CLIENT_PORT')
+    sleep_message = "sleep:" + os.getenv('SECRET_KEY')
+
+    if sleep_ip_address and client_port:
+        result = send_tcp_command(sleep_ip_address, client_port, sleep_message)
+        if result is not None:
+            logging.info(f"Sleep command triggered successfully by {user_info['username']}.")
+            return jsonify({"status": "Sleep command sent successfully"}), 200
+        else:
+            return jsonify({"error": "Failed to send sleep command"}), 500
+    else:
+        logging.error("Required IP address or port not provided.")
+        return jsonify({"error": "Configuration error. Please check settings."}), 500
 
 if __name__ == '__main__':
     app.run(port=os.getenv('APP_PORT'), debug=True)

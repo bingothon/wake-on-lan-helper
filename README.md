@@ -51,6 +51,7 @@ WOL_MAC_ADDRESS=your_target_mac_address
 WOL_IP_ADDRESS=your_target_ip_address
 WOL_PORT=your_target_port
 APP_PORT=5000  # or any other port you prefer
+CLIENT_PORT=1234 # the port your client listens on
 SECRET_KEY=your_secret_key_for_flask_session
 ```
 
@@ -66,9 +67,28 @@ Start the server using:
 python server.py
 ```
 
-Navigate to `http://localhost:5000` (or whichever port you set) on your web browser to access the application.
+### 6. Generate the client
+
+Generate a client.exe to use on the target machine
+
+```bash
+python generateClient.py
+```
+
+### 7. Upload the client
+
+Make sure the dist/client.exe is inside your target machine boot run it like
+```bash
+client.exe <ip> <port> <secret_key>
+```
+
+### 8. Forward the client port on your router
+
+Now you should be setup
 
 ## Usage
+
+Navigate to `http://localhost:5000` (or whichever port you set) on your web browser to access the application.
 
 Once the application is running:
 
