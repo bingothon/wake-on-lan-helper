@@ -1,7 +1,7 @@
-cryptography==latest
-Flask==latest
-Flask-Dance==latest
-gunicorn==latest
-python-dotenv==latest
-requests==latest
-wakeonlan==latest
+cryptography==42.0.7
+Flask==3.0.3
+Flask-Dance==7.1.0
+gunicorn==22.0.0
+python-dotenv==1.0.1
+requests==2.31.0
+wakeonlan==3.1.0
