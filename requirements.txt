@@ -1,0 +1,7 @@
+cryptography==latest
+Flask==latest
+Flask-Dance==latest
+gunicorn==latest
+python-dotenv==latest
+requests==latest
+wakeonlan==latest
